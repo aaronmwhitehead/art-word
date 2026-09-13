@@ -3,3 +3,7 @@
 # Full-resolution source photographs. Kept locally so images can be
 # re-exported at a different size; too large to serve or commit.
 assets/images/originals/
+
+# Answer key. Kept local so it isn't published alongside the site.
+# Regenerate with: node tools/make-answers.js
+ANSWERS.md
