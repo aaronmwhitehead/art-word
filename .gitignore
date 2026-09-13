@@ -1,0 +1,5 @@
+.DS_Store
+
+# Full-resolution source photographs. Kept locally so images can be
+# re-exported at a different size; too large to serve or commit.
+assets/images/originals/

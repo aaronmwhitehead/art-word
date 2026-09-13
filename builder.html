@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puzzle Builder | High Museum Gallery Hunt</title>
+<link rel="stylesheet" href="assets/high.css">
+<style>
+  .build-layout { display: grid; grid-template-columns: 1fr; gap: 40px; }
+  @media (min-width: 1060px) { .build-layout { grid-template-columns: minmax(380px,470px) minmax(0,1fr); gap: 52px; align-items: start; } }
+  @media (min-width: 1060px) { .preview-col { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; } }
+
+  .panel { border-top: 2px solid var(--hm-black); padding-top: 18px; margin-bottom: 34px; }
+  .panel > h2 { font-family: var(--hm-serif); font-weight: 400; font-size: 21px; color: var(--hm-black); margin: 0 0 4px; }
+  .panel > .panel-sub { font-size: 13px; color: #6f6f6f; margin: 0 0 18px; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 560px) { .row-2 { grid-template-columns: 1fr; } }
+
+  /* item list */
+  .item-list { list-style: none; margin: 0; padding: 0; }
+  .item-row { border-bottom: 1px solid var(--hm-rule); padding: 14px 0; display: flex; gap: 13px; align-items: flex-start; }
+  .item-thumb { width: 62px; height: 62px; flex: none; border: 1px solid var(--hm-rule); background: var(--hm-wash); object-fit: cover; }
+  .item-thumb.ph { display: flex; align-items: center; justify-content: center; font-size: 10px; color: #9a9a9a; text-align: center; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-answer { font-family: var(--hm-sans); font-weight: 700; letter-spacing: .05em; color: var(--hm-black); font-size: 14.5px; word-break: break-word; }
+  .item-meta { font-size: 12px; color: #8a8a8a; margin-top: 3px; }
+  .item-bad { font-size: 12.5px; color: var(--hm-red); margin-top: 4px; }
+  .item-actions { display: flex; flex-direction: column; gap: 5px; flex: none; }
+  .icon-btn {
+    border: 1px solid var(--hm-rule); background: #fff; cursor: pointer;
+    font-family: var(--hm-sans); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; padding: 5px 9px; color: var(--hm-ink);
+  }
+  .icon-btn:hover { border-color: var(--hm-black); color: var(--hm-black); }
+  .icon-btn.danger:hover { border-color: var(--hm-red); color: var(--hm-red); }
+  .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .empty-note { color: #8a8a8a; font-size: 13.5px; padding: 14px 0; }
+
+  /* clue letter chooser */
+  .letter-opts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .letter-chip {
+    border: 1px solid var(--hm-rule); background: #fff; cursor: pointer;
+    padding: 6px 10px; font-family: var(--hm-sans); font-size: 12px; color: var(--hm-ink);
+  }
+  .letter-chip:hover { border-color: var(--hm-black); }
+  .letter-chip.is-sel { border-color: var(--hm-red); background: #fdf1f0; color: var(--hm-black); font-weight: 700; }
+  .warn { color: var(--hm-red); font-size: 13px; margin-top: 8px; }
+  .ok-note { color: #1a7f37; font-size: 13px; margin-top: 8px; }
+
+  .seg { display: flex; gap: 0; }
+  .seg button {
+    flex: 1; border: 1px solid var(--hm-rule); background: #fff; cursor: pointer;
+    font-family: var(--hm-sans); font-size: 11.5px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; padding: 11px 8px; color: var(--hm-ink);
+  }
+  .seg button + button { border-left: 0; }
+  .seg button.is-on { background: var(--hm-black); border-color: var(--hm-black); color: #fff; }
+
+  /* preview grid */
+  .pgrid { display: grid; gap: 4px; justify-content: start; margin: 0 auto; }
+  .prow { display: grid; gap: 4px; grid-auto-flow: column; justify-content: start; }
+  .psq {
+    width: 27px; height: 27px; border: 1px solid var(--hm-rule); background: #fff;
+    display: flex; align-items: center; justify-content: center; border-radius: 3px;
+    font-family: var(--hm-sans); font-weight: 700; font-size: 13px; color: var(--hm-black);
+  }
+  .psq.pending { background: var(--hm-wash); border-style: dashed; color: #b0b0b0; }
+  .psq.missing { border-color: var(--hm-red); color: var(--hm-red); background: #fff5f4; }
+  .prev-scroll { overflow: auto; padding: 10px; background: var(--hm-wash-2); border: 1px solid var(--hm-rule); }
+
+  .out-area { width: 100%; height: 200px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+  .url-preview {
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px;
+    background: var(--hm-wash); border-left: 3px solid var(--hm-red);
+    padding: 11px 13px; margin-top: 8px; word-break: break-all;
+  }
+  .step-list { padding-left: 18px; font-size: 14px; line-height: 1.7; }
+  .step-list code { background: var(--hm-wash); padding: 1px 5px; font-size: 12.5px; }
+  .toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+    background: var(--hm-black); color: #fff; padding: 12px 20px;
+    font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 50;
+  }
+  .toast.is-on { opacity: 1; }
+  .dropzone { border: 1px dashed var(--hm-rule); padding: 12px; text-align: center; font-size: 12.5px; color: #8a8a8a; }
+  .colour-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .colour-row input[type=color] {
+    width: 46px; height: 40px; padding: 2px; border: 1px solid var(--hm-rule);
+    background: #fff; cursor: pointer;
+  }
+  .swatches { display: flex; gap: 5px; flex-wrap: wrap; }
+  .swatch { width: 24px; height: 24px; border: 1px solid rgba(0,0,0,.18); cursor: pointer; padding: 0; }
+  .swatch.is-sel { outline: 2px solid var(--hm-black); outline-offset: 1px; }
+  .dropzone.is-over { border-color: var(--hm-red); background: #fdf1f0; color: var(--hm-black); }
+</style>
+</head>
+<body>
+
+<header class="hm-header">
+  <div class="hm-shell hm-header-inner">
+    <a class="hm-wordmark" href="./">High Museum of Art</a>
+    <div class="hm-header-meta">Puzzle Builder</div>
+  </div>
+</header>
+
+<main class="hm-shell">
+  <div class="hm-titleblock">
+    <p class="hm-eyebrow">Event Tools</p>
+    <h1 class="hm-title">Puzzle Builder</h1>
+    <p class="hm-standfirst">Set a clue word, add one artwork per letter, and export a JSON file for the <code>puzzles/</code> folder.</p>
+  </div>
+  <hr class="hm-rule">
+
+  <div class="build-layout" style="padding-top:34px">
+    <div class="form-col">
+
+      <section class="panel">
+        <h2>1. Puzzle details</h2>
+        <p class="panel-sub">The slug becomes the <code>?p=</code> value in this team&rsquo;s link.</p>
+
+        <div class="hm-field">
+          <label class="hm-label" for="fTitle">Puzzle title</label>
+          <input class="hm-input" id="fTitle" placeholder="Team Red" autocomplete="off">
+        </div>
+
+        <div class="hm-field">
+          <label class="hm-label" for="fSlug">URL slug (the <code>p</code> parameter)</label>
+          <input class="hm-input" id="fSlug" placeholder="team-red" autocomplete="off" spellcheck="false">
+          <p class="hm-help">Lowercase letters, numbers and hyphens. This is the filename and the link.</p>
+          <div class="url-preview" id="urlPreview">?p=</div>
+        </div>
+
+        <div class="hm-field">
+          <label class="hm-label" for="fClue">Clue word</label>
+          <input class="hm-input" id="fClue" placeholder="ART" autocomplete="off" spellcheck="false" style="text-transform:uppercase">
+          <p class="hm-help">One artwork per letter. This is what the team carries to the final puzzle.</p>
+        </div>
+
+        <div class="hm-field">
+          <label class="hm-label" for="fClueColor">Clue highlight colour</label>
+          <div class="colour-row">
+            <input type="color" id="fClueColor" value="#f8ce8f" aria-label="Clue highlight colour">
+            <input class="hm-input" id="fClueHex" value="#f8ce8f" spellcheck="false" autocomplete="off" style="max-width:130px">
+            <div class="swatches" id="swatches"></div>
+          </div>
+          <p class="hm-help">Used for every letter of the clue word in this puzzle.</p>
+        </div>
+
+        <div class="row-2">
+          <div class="hm-field">
+            <label class="hm-label" for="fEyebrow">Eyebrow</label>
+            <input class="hm-input" id="fEyebrow" placeholder="Scavenger Hunt" autocomplete="off">
+          </div>
+          <div class="hm-field">
+            <label class="hm-label" for="fLocation">Location</label>
+            <input class="hm-input" id="fLocation" placeholder="Stent Family Wing" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="hm-field">
+          <label class="hm-label" for="fIntro">Intro text</label>
+          <textarea class="hm-textarea" id="fIntro" rows="2" placeholder="Find each work in the galleries, then name it."></textarea>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>2. Add an artwork <span id="letterHint" style="color:#8a8a8a;font-size:15px"></span></h2>
+        <p class="panel-sub">Works are shown to players in this order, one per clue letter.</p>
+
+        <div class="hm-field">
+          <label class="hm-label" for="fImage">Image path</label>
+          <input class="hm-input" id="fImage" placeholder="assets/images/piece-1.jpg" autocomplete="off" spellcheck="false">
+          <p class="hm-help">Relative to the site root. Put files in <code>assets/images/</code>.</p>
+          <div class="dropzone" id="dropzone" style="margin-top:8px">Drop an image file here to fill in its path</div>
+        </div>
+
+        <div class="hm-field">
+          <label class="hm-label">Question shown to the player</label>
+          <div class="seg" id="promptSeg">
+            <button type="button" data-prompt="work" class="is-on">Name of Work</button>
+            <button type="button" data-prompt="artist">Artist Last Name</button>
+          </div>
+        </div>
+
+        <div class="hm-field">
+          <label class="hm-label" for="fHint">Hint <span style="text-transform:none;letter-spacing:0;font-weight:400;color:#8a8a8a">(optional)</span></label>
+          <input class="hm-input" id="fHint" placeholder="Stent Family Wing, Level 3, Gallery 308" autocomplete="off">
+          <p class="hm-help">Shown only if the player asks for it. Usually where the work hangs.</p>
+        </div>
+
+        <div class="hm-field">
+          <label class="hm-label" for="fAnswer">Answer</label>
+          <input class="hm-input" id="fAnswer" placeholder="Tobacco Demon" autocomplete="off">
+          <p class="hm-help">Spaces and punctuation are ignored when checking and in the grid.</p>
+          <div class="letter-opts" id="letterOpts"></div>
+          <div class="warn" id="answerWarn" hidden></div>
+          <div class="ok-note" id="answerOk" hidden></div>
+        </div>
+
+        <button class="hm-btn" id="addItemBtn" type="button" disabled>Add artwork</button>
+        <button class="hm-btn hm-btn--ghost" id="cancelEditBtn" type="button" hidden>Cancel edit</button>
+      </section>
+
+      <section class="panel">
+        <h2>3. Artworks <span id="itemCount" style="color:#8a8a8a;font-size:15px"></span></h2>
+        <ul class="item-list" id="itemList"></ul>
+        <p class="empty-note" id="emptyNote">No artworks yet.</p>
+      </section>
+    </div>
+
+    <div class="preview-col">
+      <section class="panel">
+        <h2>Grid preview</h2>
+        <p class="panel-sub" id="gridMeta">Set a clue word to begin.</p>
+        <div class="prev-scroll"><div class="pgrid" id="prevGrid"></div></div>
+        <p class="hm-help" id="alignNote" style="margin-top:10px"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Export</h2>
+        <p class="panel-sub">Save this as <code id="fileNameHint">puzzles/&lt;slug&gt;.json</code> in your repo.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="hm-btn hm-btn--red" id="downloadBtn" type="button">Download JSON</button>
+          <button class="hm-btn hm-btn--ghost" id="copyBtn" type="button">Copy JSON</button>
+          <button class="hm-btn hm-btn--ghost" id="testBtn" type="button">Test puzzle</button>
+        </div>
+        <textarea class="hm-textarea out-area" id="outJson" readonly spellcheck="false"></textarea>
+
+        <h2 style="margin-top:28px">Publish</h2>
+        <ol class="step-list">
+          <li>Put the artwork images in <code>assets/images/</code>.</li>
+          <li>Download the JSON into <code>puzzles/</code>.</li>
+          <li>Add the puzzle to <code>puzzles/index.json</code> so it shows on the home page.</li>
+          <li>Commit and push, then share <code id="shareHint">?p=&lt;slug&gt;</code>.</li>
+        </ol>
+
+        <h2 style="margin-top:28px">Load existing</h2>
+        <p class="panel-sub">Paste a puzzle&rsquo;s JSON to keep editing it.</p>
+        <textarea class="hm-textarea" id="importJson" rows="3" placeholder='{"slug":"team-red", ...}' spellcheck="false"></textarea>
+        <button class="hm-btn hm-btn--ghost" id="importBtn" type="button" style="margin-top:10px">Load JSON</button>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="hm-footer"><div class="hm-shell">High Museum Gallery Hunt &middot; puzzle builder</div></footer>
+<div class="toast" id="toast"></div>
+
+<script src="assets/acrostic.js"></script>
+<script src="assets/builder.js"></script>
+</body>
+</html>

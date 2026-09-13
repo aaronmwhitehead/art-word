@@ -1,0 +1,39 @@
+{
+  "slug": "caleb",
+  "title": "Caleb",
+  "eyebrow": "Scavenger Hunt",
+  "location": "",
+  "intro": "Find each work in the galleries, then tap its photo to name it.",
+  "clue": "GIFT",
+  "clueColor": "#6b2737",
+  "items": [
+    {
+      "image": "assets/images/piece_a.jpg",
+      "prompt": "artist",
+      "answer": "Modigliani",
+      "hint": "Stent Family Wing, Level 2, Gallery 205",
+      "clueIndex": 4
+    },
+    {
+      "image": "assets/images/piece_b.jpg",
+      "prompt": "work",
+      "answer": "Sally with Skull",
+      "hint": "Stent Family Wing, Level 3, Gallery 301",
+      "clueIndex": 6
+    },
+    {
+      "image": "assets/images/piece_c.jpg",
+      "prompt": "work",
+      "answer": "Ferris Wheel",
+      "hint": "Stent Family Wing, Skyway, Gallery 404",
+      "clueIndex": 0
+    },
+    {
+      "image": "assets/images/piece_d.jpg",
+      "prompt": "artist",
+      "answer": "Quintana",
+      "hint": "Wieland Pavilion, Skyway, Gallery 411",
+      "clueIndex": 4
+    }
+  ]
+}

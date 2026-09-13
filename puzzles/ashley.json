@@ -1,0 +1,32 @@
+{
+  "slug": "ashley",
+  "title": "Ashley",
+  "eyebrow": "Scavenger Hunt",
+  "location": "",
+  "intro": "Find each work in the galleries, then tap its photo to name it.",
+  "clue": "ART",
+  "clueColor": "#cfeaaa",
+  "items": [
+    {
+      "image": "assets/images/piece_i.jpg",
+      "prompt": "artist",
+      "answer": "German",
+      "hint": "Stent Family Wing, Level 3, Gallery 308",
+      "clueIndex": 4
+    },
+    {
+      "image": "assets/images/piece_j.jpg",
+      "prompt": "artist",
+      "answer": "Onobrakpeya",
+      "hint": "Stent Family Wing, Skyway, Gallery 403",
+      "clueIndex": 4
+    },
+    {
+      "image": "assets/images/piece_k.jpg",
+      "prompt": "artist",
+      "answer": "Bengtsson",
+      "hint": "Wieland Pavilion, Skyway, Gallery 419",
+      "clueIndex": 4
+    }
+  ]
+}

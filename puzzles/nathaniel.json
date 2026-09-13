@@ -1,0 +1,39 @@
+{
+  "slug": "nathaniel",
+  "title": "Nathaniel",
+  "eyebrow": "Scavenger Hunt",
+  "location": "",
+  "intro": "Find each work in the galleries, then tap its photo to name it.",
+  "clue": "SHOP",
+  "clueColor": "#f0956a",
+  "items": [
+    {
+      "image": "assets/images/piece_e.jpg",
+      "prompt": "work",
+      "answer": "Easy Edges",
+      "hint": "Wieland Pavilion, Skyway, Gallery 421",
+      "clueIndex": 2
+    },
+    {
+      "image": "assets/images/piece_f.jpg",
+      "prompt": "artist",
+      "answer": "Church",
+      "hint": "Stent Family Wing, Skyway, Gallery 408",
+      "clueIndex": 1
+    },
+    {
+      "image": "assets/images/piece_g.jpg",
+      "prompt": "work",
+      "answer": "Clock",
+      "hint": "Stent Family Wing, Level 3, Gallery 310",
+      "clueIndex": 2
+    },
+    {
+      "image": "assets/images/piece_h.jpg",
+      "prompt": "artist",
+      "answer": "Pissarro",
+      "hint": "Stent Family Wing, Level 2, Gallery 207",
+      "clueIndex": 0
+    }
+  ]
+}

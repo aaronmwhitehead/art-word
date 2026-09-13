@@ -1,0 +1,29 @@
+{
+  "puzzles": [
+    {
+      "slug": "ashley",
+      "title": "Ashley",
+      "location": "3 works"
+    },
+    {
+      "slug": "caleb",
+      "title": "Caleb",
+      "location": "4 works"
+    },
+    {
+      "slug": "hannah",
+      "title": "Hannah",
+      "location": "4 works"
+    },
+    {
+      "slug": "nathaniel",
+      "title": "Nathaniel",
+      "location": "4 works"
+    },
+    {
+      "slug": "patrick",
+      "title": "Patrick",
+      "location": "4 works"
+    }
+  ]
+}

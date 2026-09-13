@@ -1,0 +1,39 @@
+{
+  "slug": "hannah",
+  "title": "Hannah",
+  "eyebrow": "Scavenger Hunt",
+  "location": "",
+  "intro": "Find each work in the galleries, then tap its photo to name it.",
+  "clue": "IWON",
+  "clueColor": "#f6ef9c",
+  "items": [
+    {
+      "image": "assets/images/piece_p.jpg",
+      "prompt": "artist",
+      "answer": "Wilson",
+      "hint": "Stent Family Wing, Level 3, Gallery 306",
+      "clueIndex": 1
+    },
+    {
+      "image": "assets/images/piece_q.jpg",
+      "prompt": "work",
+      "answer": "Woman Seated at the Piano",
+      "hint": "Stent Family Wing, Level 2, Gallery 206",
+      "clueIndex": 0
+    },
+    {
+      "image": "assets/images/piece_r.jpg",
+      "prompt": "work",
+      "answer": "Man the Unknown",
+      "hint": "Wieland Pavilion, Skyway, Gallery 415",
+      "clueIndex": 10
+    },
+    {
+      "image": "assets/images/piece_s.jpg",
+      "prompt": "work",
+      "answer": "Untitled",
+      "hint": "Stent Family Wing, Skyway, Gallery 405",
+      "clueIndex": 1
+    }
+  ]
+}
