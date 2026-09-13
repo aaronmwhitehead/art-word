@@ -1,28 +1,28 @@
 {
   "puzzles": [
     {
-      "slug": "ashley",
-      "title": "Ashley",
+      "slug": "puzzle1",
+      "title": "Puzzle 1",
       "location": "3 works"
     },
     {
-      "slug": "caleb",
-      "title": "Caleb",
+      "slug": "puzzle2",
+      "title": "Puzzle 2",
       "location": "4 works"
     },
     {
-      "slug": "hannah",
-      "title": "Hannah",
+      "slug": "puzzle3",
+      "title": "Puzzle 3",
       "location": "4 works"
     },
     {
-      "slug": "nathaniel",
-      "title": "Nathaniel",
+      "slug": "puzzle4",
+      "title": "Puzzle 4",
       "location": "4 works"
     },
     {
-      "slug": "patrick",
-      "title": "Patrick",
+      "slug": "puzzle5",
+      "title": "Puzzle 5",
       "location": "4 works"
     }
   ]
