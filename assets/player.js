@@ -301,7 +301,7 @@
     persist();
   });
 
-  function closeModal() {
+  function closeModal(done) {
     const modal = $('modal');
     modal.classList.add('is-closing');
     $('answerInput').blur();
@@ -309,6 +309,9 @@
       modal.classList.remove('is-open', 'is-closing');
       document.body.style.overflow = '';
       state.openIndex = -1;
+      // Only now is the page scrollable again; iOS silently drops scrolls
+      // issued while overflow is still hidden.
+      if (typeof done === 'function') requestAnimationFrame(done);
     }, 200);
   }
 
@@ -344,35 +347,79 @@
     state.solved[i] = HM.normalize(item.answer);
     persist();
 
+    const complete = isComplete();
     setTimeout(() => {
-      closeModal();
-      renderPieces();
-
       // The player may be well down the list of works. Bring the grid into view
       // before the letters drop, so the animation they just earned is actually
-      // seen. On the final answer the reveal handles its own scrolling.
-      const complete = isComplete();
-      const delay = scrollToGrid() ? 420 : 0;
-
-      setTimeout(() => {
-        fillRow(i);
-        if (complete) setTimeout(() => revealClue(false), 620);
-      }, delay);
+      // seen. On the final answer the reveal continues from there.
+      closeModal(() => {
+        renderPieces();
+        scrollToGrid(() => {
+          fillRow(i);
+          if (complete) setTimeout(() => revealClue(false), 620);
+        });
+      });
     }, 420);
   }
 
   /*
-    Scroll the answer grid into view. Returns true if the page actually had to
-    move, so callers can wait for it before animating.
+    Scroll the answer grid into view and call back when it has settled.
+
+    iOS Safari makes this awkward: scrollIntoView({behavior:'smooth'}) is
+    unreliable there -- particularly just after the keyboard closes, since
+    dismissing it resizes the visual viewport asynchronously and moves the
+    document under us. So compute the target offset ourselves, scroll with an
+    explicit window.scrollTo, and verify we arrived; if the page moved after
+    the keyboard settled, correct it once more.
   */
-  function scrollToGrid() {
+  function scrollToGrid(done) {
     const grid = $('agrid');
-    if (!grid) return false;
+    const finish = () => { if (typeof done === 'function') done(); };
+    if (!grid) { finish(); return; }
+
+    const targetTop = () => {
+      const rect = grid.getBoundingClientRect();
+      const absoluteTop = rect.top + window.pageYOffset;
+      // Centre the grid, but never scroll past the top of the document.
+      const centred = absoluteTop - (window.innerHeight - rect.height) / 2;
+      const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      return Math.max(0, Math.min(centred, max));
+    };
+
     const rect = grid.getBoundingClientRect();
-    const fullyVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
-    if (fullyVisible) return false;
-    grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return true;
+    if (rect.top >= 0 && rect.bottom <= window.innerHeight) { finish(); return; }
+
+    const go = (smooth) => {
+      const top = targetTop();
+      try {
+        window.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
+      } catch (_) {
+        window.scrollTo(0, top);   // older Safari: no options object
+      }
+      return top;
+    };
+
+    go(true);
+
+    /*
+      Then verify, repeatedly. Safari finishes its keyboard dismissal animation
+      on its own schedule and can shift the document afterwards, so a single
+      scroll is not enough -- re-check a few times and correct instantly if the
+      grid is still off screen. Cheap, and it stops as soon as we have arrived.
+    */
+    let tries = 0;
+    const settle = () => {
+      tries++;
+      const r = grid.getBoundingClientRect();
+      const onScreen = r.top >= 0 && r.bottom <= window.innerHeight;
+
+      if (!onScreen) {
+        window.scrollTo(0, targetTop());   // instant: no animation to interrupt
+      }
+      if (onScreen || tries >= 5) { finish(); return; }
+      setTimeout(settle, 130);
+    };
+    setTimeout(settle, 380);
   }
 
   /* Drop the solved letters into the grid one square at a time. */
@@ -412,10 +459,9 @@
 
     if (instant) { renderGrid(); return; }
 
-    // Bring the grid into view first, then pin the page there.
-    const moved = scrollToGrid();
-
-    setTimeout(() => {
+    // The row fill has already brought the grid into view; make sure of it,
+    // then pin the page there.
+    scrollToGrid(() => {
       lockInput(true);
       applyOffsets(true, true);
 
@@ -443,30 +489,44 @@
 
       const total = 1400 + state.layout.rows.length * 260 + 500;
       setTimeout(() => lockInput(false), total);
-    }, moved ? 620 : 120);
+    });
   }
 
   /* Block scrolling and pointer input while the finale plays. */
   let lockedScrollY = 0;
+
+  // iOS (including iPadOS, which reports as Mac but has touch).
+  const IS_IOS = /iP(hone|ad|od)/.test(navigator.platform) ||
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   function lockInput(on) {
     document.body.classList.toggle('is-locked', on);
+
     if (on) {
-      // overflow:hidden alone doesn't hold the page when the documentElement is
-      // the scroller, so pin the body at the current offset instead.
-      lockedScrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${lockedScrollY}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.width = '100%';
+      lockedScrollY = window.pageYOffset;
+      if (!IS_IOS) {
+        // overflow:hidden alone doesn't hold the page when the documentElement
+        // is the scroller, so pin the body at the current offset instead.
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${lockedScrollY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+      }
+      // On iOS, position:fixed on <body> fights the visual viewport and can
+      // jump the page. The touchmove handler below already blocks scrolling
+      // there, so leave layout alone and let that do the work.
     } else {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.width = '';
-      window.scrollTo(0, lockedScrollY);
+      if (!IS_IOS) {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        window.scrollTo(0, lockedScrollY);
+      }
     }
+
     if (on) {
       window.addEventListener('wheel', preventScroll, { passive: false });
       window.addEventListener('touchmove', preventScroll, { passive: false });
